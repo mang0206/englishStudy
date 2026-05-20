@@ -160,6 +160,23 @@ task_checks
 
 ---
 
+## 화면 설계
+<img width="742" height="456" alt="image" src="https://github.com/user-attachments/assets/00a66e84-4ff4-45c0-9cf8-49cb98d3378a" />
+
+<img width="741" height="459" alt="image" src="https://github.com/user-attachments/assets/5a43ce11-cd19-4251-b54c-e269176a6ec6" />
+
+<img width="747" height="459" alt="image" src="https://github.com/user-attachments/assets/d0c50422-7de7-4f00-b0aa-7fbb5726f4fe" />
+
+<img width="744" height="405" alt="image" src="https://github.com/user-attachments/assets/840395f7-e52a-4663-995d-b990053cfa78" />
+
+<img width="746" height="533" alt="image" src="https://github.com/user-attachments/assets/facd43c0-5fd5-40d9-9e4b-64f80a4cf1c0" />
+
+<img width="745" height="360" alt="image" src="https://github.com/user-attachments/assets/f8a0f34e-9670-4652-8dc7-c1f7b78bc70f" />
+
+<img width="746" height="559" alt="image" src="https://github.com/user-attachments/assets/8e563d05-fdcc-426e-a429-491c252b5baf" />
+
+---
+
 ## 프로젝트 구조
 
 ```
