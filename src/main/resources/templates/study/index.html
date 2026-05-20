@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 학습 트래커 - 학습</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar('study')}"></nav>
+
+<div class="app">
+<div class="split">
+
+    <div class="pane">
+        <div class="pane-header">
+            <span>Easy English (YouTube)</span>
+            <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">새 창에서 열기</a>
+        </div>
+        <div class="pane-body" style="padding: 0;">
+            <iframe class="yt-iframe"
+                    src="https://www.youtube.com/embed?listType=user_uploads&list=easyenglish551"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="pane">
+        <div id="stage-input" class="pane-stage">
+            <div class="pane-header">스크립트 입력</div>
+            <div class="pane-body">
+                <textarea id="rawScript" class="script-textarea"
+                          placeholder="유튜브 영상의 스크립트를 복사해서 붙여넣으세요&#10;&#10;예시:&#10;0:08 job interview.&#10;0:12 Good afternoon, Mr. Carter."></textarea>
+            </div>
+            <div class="pane-footer">
+                <button class="btn primary" id="btnTranslate" onclick="onTranslate()">번역 시작</button>
+            </div>
+        </div>
+
+        <div id="stage-script" class="pane-stage" style="display:none;">
+            <div class="pane-header">
+                <span id="paneTitle">학습 스크립트</span>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn small" id="btnToggleEn" onclick="toggleEn()">EN 숨기기</button>
+                    <button class="btn small" id="btnToggleKo" onclick="toggleKo()">KO 숨기기</button>
+                </div>
+            </div>
+            <div class="pane-body" id="scriptList"></div>
+            <div class="pane-footer" id="scriptFooter">
+                <button class="btn primary" onclick="onShadowingComplete()">쉐도잉 완료</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/study.js}"></script>
+</body>
+</html>

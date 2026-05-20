@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:english_tracker}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+
+  # Spring AI - Google GenAI (Gemini API Key 사용)
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: gemini-2.0-flash
+            temperature: 0.4
+            max-tokens: 4096
+
+app:
+  redis:
+    channel:
+      sentence-selected: sentence.selected
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.minjae.englishtracker: DEBUG
