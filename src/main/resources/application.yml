@@ -45,3 +45,5 @@ server:
 logging:
   level:
     com.minjae.englishtracker: DEBUG
+
+

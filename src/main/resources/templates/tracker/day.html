@@ -22,7 +22,7 @@
             </span>
             <a th:href="@{/tracker/{date}(date=${day.date.plusDays(1)})}" class="btn small">→</a>
         </div>
-        <button class="btn small" th:attr="onclick=|resetDay('${day.date}')|">초기화</button>
+        <button class="btn small" data-action="reset" th:attr="data-date=${day.date}">초기화</button>
     </div>
 
     <div class="progress-bar-wrap">
@@ -42,7 +42,7 @@
 
     <div class="blocks">
         <div th:each="block : ${day.blocks}" class="block" th:id="|block-${block.block.name()}|">
-            <div class="block-header" th:onclick="|toggleBlock('${block.block.name()}')|">
+            <div class="block-header" data-action="toggle-block" th:attr="data-block=${block.block.name()}">
                 <div class="block-icon" th:text="${block.icon}"></div>
                 <div class="block-meta">
                     <div class="block-title" th:text="${block.displayName}"></div>
@@ -60,7 +60,8 @@
             </div>
             <div class="block-body" th:id="|body-${block.block.name()}|">
                 <div th:each="task, tIter : ${block.taskLabels}" class="task"
-                     th:onclick="|toggleTask('${day.date}', '${block.block.name()}', ${tIter.index})|">
+                     data-action="toggle-task"
+                     th:attr="data-date=${day.date}, data-block=${block.block.name()}, data-task-index=${tIter.index}">
                     <div class="task-check" th:id="|check-${block.block.name()}-${tIter.index}|"
                          th:classappend="${block.taskChecks[tIter.index]} ? 'done' : ''"></div>
                     <span class="task-label" th:id="|label-${block.block.name()}-${tIter.index}|"
@@ -70,7 +71,8 @@
                 <div class="note-area">
                     <div class="note-label">오늘의 메모</div>
                     <textarea class="note-input" placeholder="배운 표현, 어려웠던 점 등..."
-                              th:attr="onblur=|saveMemo('${day.date}', '${block.block.name()}', this.value)|"
+                              data-action="save-memo"
+                              th:attr="data-date=${day.date}, data-block=${block.block.name()}"
                               th:text="${block.memo}"></textarea>
                 </div>
             </div>

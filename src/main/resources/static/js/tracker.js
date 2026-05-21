@@ -54,3 +54,29 @@ function resetDay(date) {
     .then(r => { if (r.ok) location.reload(); })
     .catch(() => showToast('초기화 실패'));
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 클릭 이벤트
+     document.body.addEventListener('click', (e) => {
+         const target = e.target.closest('[data-action]');
+         if (!target) return;
+
+         const action = target.dataset.action;
+
+         if (action === 'reset') {
+             resetDay(target.dataset.date);
+         } else if (action === 'toggle-block') {
+             toggleBlock(target.dataset.block);
+         } else if (action === 'toggle-task') {
+             toggleTask(target.dataset.date, target.dataset.block, parseInt(target.dataset.taskIndex, 10));
+         }
+     });
+
+     // textarea blur 이벤트 (blur는 버블링 안 돼서 capture phase로 잡음)
+     document.body.addEventListener('blur', (e) => {
+         const target = e.target.closest('[data-action="save-memo"]');
+         if (!target) return;
+         saveMemo(target.dataset.date, target.dataset.block, target.value);
+     }, true);
+ });

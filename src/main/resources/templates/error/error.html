@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류가 발생했습니다</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .error-wrap {
+            max-width: 560px; margin: 4rem auto; padding: 2rem;
+            background: var(--bg); border: 0.5px solid var(--border);
+            border-radius: var(--radius-lg); text-align: center;
+        }
+        .error-status { font-size: 64px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+        .error-code { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; letter-spacing: 0.05em; }
+        .error-msg { font-size: 18px; font-weight: 500; margin-bottom: 12px; }
+        .error-detail { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+        .error-actions { display: flex; gap: 8px; justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="error-wrap">
+        <div class="error-status" th:text="${status}">500</div>
+        <div class="error-code" th:text="'[' + ${code} + ']'">[C001]</div>
+        <div class="error-msg" th:text="${message}">오류가 발생했습니다</div>
+        <div class="error-detail" th:if="${detail != null and detail != ''}" th:text="${detail}"></div>
+        <div class="error-actions">
+            <a href="/" class="btn">홈으로</a>
+            <a href="javascript:history.back()" class="btn">이전 페이지</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
