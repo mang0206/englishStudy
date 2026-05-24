@@ -49,7 +49,6 @@
 |---|---|
 | Backend | Spring Boot 3.4, Spring Data JPA |
 | AI | Spring AI 1.1 + Google GenAI (Gemini) |
-| Transcript | FastAPI + youtube-transcript-api + yt-dlp (마이크로서비스) |
 | Template Engine | Thymeleaf |
 | Database | PostgreSQL 16 |
 | Cache / MQ | Redis 7 (Pub/Sub) |

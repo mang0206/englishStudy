@@ -162,9 +162,6 @@ body {
 .exp-badge.ok { background: var(--accent-light); color: var(--accent-dark); border-color: var(--accent-mid); }
 .exp-badge.fix { background: var(--warn-light); color: var(--warn); border-color: var(--warn-mid); }
 
-.chapter-row:hover { background: var(--bg-secondary); }
-.chapter-row input[type="radio"]:checked + span { font-weight: 500; color: var(--accent); }
-
 .prompt-screen { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .prompt-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); overflow: hidden; }
 .prompt-card-header { padding: 10px 16px; background: var(--bg-secondary); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; }

@@ -12,24 +12,55 @@
 <div class="app">
 <div class="split">
 
+    <!-- 좌측: 영상 + 챕터 선택 -->
     <div class="pane">
         <div class="pane-header">
             <span>Easy English (YouTube)</span>
-            <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">새 창에서 열기</a>
+            <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">채널 열기</a>
         </div>
-        <div class="pane-body" style="padding: 0;">
-            <iframe class="yt-iframe"
-                    src="https://www.youtube.com/@easyenglish551/videos"
-                    allowfullscreen></iframe>
+
+        <div class="pane-body" style="padding: 0; display: flex; flex-direction: column;">
+            <!-- URL 입력 -->
+            <div style="padding: 10px 12px; border-bottom: 0.5px solid var(--border); display: flex; gap: 6px;">
+                <input type="text" id="ytUrl" class="exp-input"
+                       placeholder="유튜브 영상 URL 붙여넣기"
+                       style="flex:1;" />
+                <button class="btn small" id="btnLoadVideo">불러오기</button>
+            </div>
+
+            <!-- 영상 iframe -->
+            <iframe id="ytIframe" class="yt-iframe"
+                    src="about:blank"
+                    allowfullscreen
+                    style="height: 360px; border: none;"></iframe>
+
+            <!-- 챕터 선택 영역 -->
+            <div id="chapterPanel" style="flex:1; padding: 12px; overflow-y: auto; display: none;">
+                <div style="font-size: 13px; font-weight: 500; margin-bottom: 10px;">
+                    📚 챕터 선택
+                </div>
+                <div id="chapterList"></div>
+                <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                    <button class="btn primary" id="btnLoadChapter" disabled>
+                        선택한 챕터 스크립트 불러오기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 로딩 인디케이터 -->
+            <div id="chapterLoading" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; display: none;">
+                <span class="loader"></span>챕터 정보 불러오는 중...
+            </div>
         </div>
     </div>
 
+    <!-- 우측: 스크립트 입력 / 학습 -->
     <div class="pane">
         <div id="stage-input" class="pane-stage">
             <div class="pane-header">스크립트 입력</div>
             <div class="pane-body">
                 <textarea id="rawScript" class="script-textarea"
-                          placeholder="유튜브 영상의 스크립트를 복사해서 붙여넣으세요&#10;&#10;예시:&#10;0:08 job interview.&#10;0:12 Good afternoon, Mr. Carter."></textarea>
+                          placeholder="좌측에서 영상을 불러오고 챕터를 선택하면 자막이 자동으로 채워져요.&#10;&#10;또는 직접 스크립트를 붙여넣어도 됩니다."></textarea>
             </div>
             <div class="pane-footer">
                 <button class="btn primary" id="btnTranslate" onclick="onTranslate()">번역 시작</button>

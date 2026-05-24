@@ -3,6 +3,8 @@ package com.minjae.englishtracker.domain.study.controller;
 import com.minjae.englishtracker.domain.study.dto.ExpansionDtos.*;
 import com.minjae.englishtracker.domain.study.dto.StudyDtos.*;
 import com.minjae.englishtracker.domain.study.service.StudyService;
+import com.minjae.englishtracker.global.infra.transcript.TranscriptClient;
+import com.minjae.englishtracker.global.infra.transcript.TranscriptResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import java.util.List;
 public class StudyController {
 
     private final StudyService studyService;
+    private final TranscriptClient transcriptClient;
 
     @GetMapping("/study")
     public String studyPage() {
@@ -30,6 +33,12 @@ public class StudyController {
     @GetMapping("/study/prompt")
     public String promptPage() {
         return "study/prompt";
+    }
+
+    @GetMapping("/api/transcript/{videoId}")
+    @ResponseBody
+    public ResponseEntity<TranscriptResponse> transcript(@PathVariable String videoId) {
+        return ResponseEntity.ok(transcriptClient.fetchTranscript(videoId));
     }
 
     @PostMapping("/api/script/translate")

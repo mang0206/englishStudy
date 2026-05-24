@@ -38,6 +38,8 @@ app:
   redis:
     channel:
       sentence-selected: sentence.selected
+  transcript:
+    base-url: ${TRANSCRIPT_URL:http://localhost:8000}
 
 server:
   port: 8080

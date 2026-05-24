@@ -44,20 +44,6 @@ services:
       timeout: 5s
       retries: 10
 
-  transcript:
-    build:
-      context: ./transcript-service
-      dockerfile: Dockerfile
-    container_name: et-transcript
-    ports:
-      - "8000:8000"
-    healthcheck:
-      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\").read()'"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   app:
     build:
       context: .
@@ -72,7 +58,6 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       ES_URIS: http://elasticsearch:9200
-      TRANSCRIPT_URL: http://transcript:8000
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8080:8080"
@@ -82,8 +67,6 @@ services:
       redis:
         condition: service_healthy
       elasticsearch:
-        condition: service_healthy
-      transcript:
         condition: service_healthy
 
 volumes:

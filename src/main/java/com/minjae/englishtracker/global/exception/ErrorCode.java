@@ -23,7 +23,10 @@ public enum ErrorCode {
 
     // AI
     AI_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "A001", "AI 응답 파싱에 실패했습니다."),
-    AI_CALL_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "A002", "AI 호출에 실패했습니다.");
+    AI_CALL_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "A002", "AI 호출에 실패했습니다."),
+
+    // Transcript
+    TRANSCRIPT_FETCH_FAILED(HttpStatus.BAD_REQUEST, "TR001", "유튜브 자막을 가져올 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
