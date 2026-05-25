@@ -10,79 +10,80 @@
 <nav th:replace="~{fragments/navbar :: navbar('study')}"></nav>
 
 <div class="app">
-<div class="split">
+    <div class="split">
 
-    <!-- 좌측: 영상 + 챕터 선택 -->
-    <div class="pane">
-        <div class="pane-header">
-            <span>Easy English (YouTube)</span>
-            <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">채널 열기</a>
+        <!-- 좌측: 영상 + 챕터 선택 -->
+        <div class="pane">
+            <div class="pane-header">
+                <span>Easy English (YouTube)</span>
+                <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">채널 열기</a>
+            </div>
+
+            <div class="pane-body study-left-body">
+                <!-- URL 입력 (고정) -->
+                <div style="padding: 10px 12px; border-bottom: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0;">
+                    <input type="text" id="ytUrl" class="exp-input"
+                           placeholder="유튜브 영상 URL 붙여넣기"
+                           style="flex:1;" />
+                    <button class="btn small" id="btnLoadVideo">불러오기</button>
+                </div>
+
+                <!-- 영상 영역 (고정) -->
+                <div class="study-video-section">
+                    <iframe id="ytIframe"
+                            src="about:blank"
+                            allowfullscreen></iframe>
+                </div>
+
+                <!-- 챕터 영역 (헤더/스크롤리스트/푸터 분리) -->
+                <div id="chapterPanel" class="study-chapter-section" style="display: none;">
+                    <div class="study-chapter-header">📚 챕터 선택</div>
+                    <div id="chapterList" class="study-chapter-list"></div>
+                    <div class="study-chapter-footer">
+                        <button class="btn primary" id="btnLoadChapter" disabled>
+                            선택한 챕터 스크립트 불러오기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 로딩 인디케이터 -->
+                <div id="chapterLoading" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; display: none; flex-shrink: 0;">
+                    <span class="loader"></span>챕터 정보 불러오는 중...
+                </div>
+            </div>
         </div>
 
-        <div class="pane-body" style="padding: 0; display: flex; flex-direction: column;">
-            <!-- URL 입력 -->
-            <div style="padding: 10px 12px; border-bottom: 0.5px solid var(--border); display: flex; gap: 6px;">
-                <input type="text" id="ytUrl" class="exp-input"
-                       placeholder="유튜브 영상 URL 붙여넣기"
-                       style="flex:1;" />
-                <button class="btn small" id="btnLoadVideo">불러오기</button>
-            </div>
-
-            <!-- 영상 iframe -->
-            <iframe id="ytIframe" class="yt-iframe"
-                    src="about:blank"
-                    allowfullscreen
-                    style="height: 360px; border: none;"></iframe>
-
-            <!-- 챕터 선택 영역 -->
-            <div id="chapterPanel" style="flex:1; padding: 12px; overflow-y: auto; display: none;">
-                <div style="font-size: 13px; font-weight: 500; margin-bottom: 10px;">
-                    📚 챕터 선택
-                </div>
-                <div id="chapterList"></div>
-                <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
-                    <button class="btn primary" id="btnLoadChapter" disabled>
-                        선택한 챕터 스크립트 불러오기
-                    </button>
-                </div>
-            </div>
-
-            <!-- 로딩 인디케이터 -->
-            <div id="chapterLoading" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; display: none;">
-                <span class="loader"></span>챕터 정보 불러오는 중...
-            </div>
-        </div>
-    </div>
-
-    <!-- 우측: 스크립트 입력 / 학습 -->
-    <div class="pane">
-        <div id="stage-input" class="pane-stage">
-            <div class="pane-header">스크립트 입력</div>
-            <div class="pane-body">
+        <!-- 우측: 스크립트 입력 / 학습 -->
+        <div class="pane">
+            <!-- 입력 단계 -->
+            <div id="stage-input" class="pane-stage">
+                <div class="pane-header">스크립트 입력</div>
+                <div class="pane-body" style="display: flex; flex-direction: column;">
                 <textarea id="rawScript" class="script-textarea"
                           placeholder="좌측에서 영상을 불러오고 챕터를 선택하면 자막이 자동으로 채워져요.&#10;&#10;또는 직접 스크립트를 붙여넣어도 됩니다."></textarea>
-            </div>
-            <div class="pane-footer">
-                <button class="btn primary" id="btnTranslate" onclick="onTranslate()">번역 시작</button>
-            </div>
-        </div>
-
-        <div id="stage-script" class="pane-stage" style="display:none;">
-            <div class="pane-header">
-                <span id="paneTitle">학습 스크립트</span>
-                <div style="display:flex; gap:6px;">
-                    <button class="btn small" id="btnToggleEn" onclick="toggleEn()">EN 숨기기</button>
-                    <button class="btn small" id="btnToggleKo" onclick="toggleKo()">KO 숨기기</button>
+                </div>
+                <div class="pane-footer">
+                    <button class="btn primary" id="btnTranslate" onclick="onTranslate()">번역 시작</button>
                 </div>
             </div>
-            <div class="pane-body" id="scriptList"></div>
-            <div class="pane-footer" id="scriptFooter">
-                <button class="btn primary" onclick="onShadowingComplete()">쉐도잉 완료</button>
+
+            <!-- 학습 단계 -->
+            <div id="stage-script" class="pane-stage" style="display:none;">
+                <div class="pane-header">
+                    <span id="paneTitle">학습 스크립트</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn small" id="btnToggleEn" onclick="toggleEn()">EN 숨기기</button>
+                        <button class="btn small" id="btnToggleKo" onclick="toggleKo()">KO 숨기기</button>
+                    </div>
+                </div>
+                <div class="pane-body" id="scriptList"></div>
+                <div class="pane-footer" id="scriptFooter">
+                    <button class="btn primary" onclick="onShadowingComplete()">쉐도잉 완료</button>
+                </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
 </div>
 
 <script th:src="@{/js/common.js}"></script>

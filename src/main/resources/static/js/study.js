@@ -25,6 +25,13 @@ function onTranslate() {
         renderScriptList();
         document.getElementById('stage-input').style.display = 'none';
         document.getElementById('stage-script').style.display = 'flex';
+
+        // 번역 완료 후 챕터 불러오기 버튼 비활성화 (이미 학습 시작했으니 다른 챕터로 바꾸지 못하게)
+        const loadChapterBtn = document.getElementById('btnLoadChapter');
+        if (loadChapterBtn) {
+            loadChapterBtn.disabled = true;
+            loadChapterBtn.textContent = '이미 학습 시작됨';
+        }
     })
     .catch(e => {
         showToast(e.message);
@@ -178,8 +185,8 @@ function loadVideoAndChapters() {
     const loading = document.getElementById('chapterLoading');
     const list = document.getElementById('chapterList');
 
-    panel.style.display = 'none';
-    loading.style.display = 'block';
+    loading.style.display = 'none';
+    panel.style.display = 'flex';
     list.innerHTML = '';
     selectedChapterIdx = -1;
 
@@ -192,7 +199,7 @@ function loadVideoAndChapters() {
             currentChapters = data.chapters || [];
             renderChapters();
             loading.style.display = 'none';
-            panel.style.display = 'block';
+            panel.style.display = 'flex';
         })
         .catch(e => {
             loading.style.display = 'none';
