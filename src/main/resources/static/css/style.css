@@ -338,3 +338,14 @@ body {
     justify-content: flex-end;
     flex-shrink: 0;
 }
+
+/* 영상 컨트롤 바 */
+.study-video-controls {
+    padding: 8px 12px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}

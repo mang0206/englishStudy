@@ -1,8 +1,22 @@
+// 화면 상태
 let translatedSentences = [];
 let mode = 'view';
 let selectedSet = new Set();
 let showEn = true, showKo = true;
 
+// YouTube Player 상태
+let ytPlayer = null;
+let ytPlayerReady = false;
+let currentVideoId = null;
+let loopEnabled = true;
+let loopStart = 0;
+let loopEnd = null;
+let loopCheckInterval = null;
+
+let currentChapters = [];
+let selectedChapterIdx = -1;
+
+// ─────────────────────────── 번역 ───────────────────────────
 function onTranslate() {
     const raw = document.getElementById('rawScript').value.trim();
     if (!raw) { showToast('스크립트를 입력해주세요'); return; }
@@ -26,7 +40,7 @@ function onTranslate() {
         document.getElementById('stage-input').style.display = 'none';
         document.getElementById('stage-script').style.display = 'flex';
 
-        // 번역 완료 후 챕터 불러오기 버튼 비활성화 (이미 학습 시작했으니 다른 챕터로 바꾸지 못하게)
+        // 번역 완료 후 챕터 불러오기 버튼 비활성화
         const loadChapterBtn = document.getElementById('btnLoadChapter');
         if (loadChapterBtn) {
             loadChapterBtn.disabled = true;
@@ -40,6 +54,7 @@ function onTranslate() {
     });
 }
 
+// ─────────────────────────── 학습 스크립트 ───────────────────────────
 function renderScriptList() {
     const list = document.getElementById('scriptList');
     list.innerHTML = '';
@@ -139,10 +154,76 @@ function escapeHtml(s) {
     }[c]));
 }
 
-// ─────────────────────────── YouTube 영상 + 챕터 로딩 ───────────────────────────
-let currentChapters = [];
-let selectedChapterIdx = -1;
+// ─────────────────────────── YouTube IFrame Player API ───────────────────────────
+function initYoutubeApi() {
+    if (window.YT && window.YT.Player) return;
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+}
 
+window.onYouTubeIframeAPIReady = function() {
+    console.log('[YT API] ready');
+};
+
+function createOrReplacePlayer(videoId, startSec) {
+    currentVideoId = videoId;
+    const startInt = Math.floor(startSec || 0);
+
+    if (ytPlayer && ytPlayerReady) {
+        // 이미 player 있으면 video만 교체
+        ytPlayer.loadVideoById({
+            videoId: videoId,
+            startSeconds: startInt,
+        });
+        return;
+    }
+
+    // 처음 생성
+    if (!window.YT || !window.YT.Player) {
+        // API 아직 로딩 중 → 잠시 후 재시도
+        setTimeout(() => createOrReplacePlayer(videoId, startSec), 300);
+        return;
+    }
+
+    ytPlayer = new YT.Player('ytPlayer', {
+        videoId: videoId,
+        playerVars: {
+            start: startInt,
+            modestbranding: 1,
+            rel: 0,
+        },
+        events: {
+            onReady: () => {
+                ytPlayerReady = true;
+                startLoopWatcher();
+            },
+            onStateChange: (e) => {
+                // 끝까지 재생됐을 때 반복 모드면 다시 시작
+                if (e.data === YT.PlayerState.ENDED && loopEnabled && loopEnd) {
+                    ytPlayer.seekTo(loopStart, true);
+                    ytPlayer.playVideo();
+                }
+            }
+        }
+    });
+}
+
+function startLoopWatcher() {
+    if (loopCheckInterval) clearInterval(loopCheckInterval);
+    loopCheckInterval = setInterval(() => {
+        if (!ytPlayer || !ytPlayerReady) return;
+        if (!loopEnabled || loopEnd == null) return;
+        try {
+            const t = ytPlayer.getCurrentTime();
+            if (t >= loopEnd) {
+                ytPlayer.seekTo(loopStart, true);
+            }
+        } catch (e) { /* ignore */ }
+    }, 300);
+}
+
+// ─────────────────────────── 비디오 로드 + 챕터 ───────────────────────────
 function initYoutubeLoader() {
     const btn = document.getElementById('btnLoadVideo');
     const input = document.getElementById('ytUrl');
@@ -154,6 +235,14 @@ function initYoutubeLoader() {
         if (e.key === 'Enter') loadVideoAndChapters();
     });
     chapterBtn.addEventListener('click', loadSelectedChapterTranscript);
+
+    // 컨트롤 버튼 바인딩
+    const loopBtn = document.getElementById('btnLoopToggle');
+    const restartBtn = document.getElementById('btnRestart');
+    const speedSelect = document.getElementById('speedSelect');
+    if (loopBtn) loopBtn.addEventListener('click', toggleLoop);
+    if (restartBtn) restartBtn.addEventListener('click', restartChapter);
+    if (speedSelect) speedSelect.addEventListener('change', changeSpeed);
 }
 
 function extractVideoId(url) {
@@ -177,18 +266,19 @@ function loadVideoAndChapters() {
         return;
     }
 
-    // 영상 embed
-    document.getElementById('ytIframe').src = `https://www.youtube.com/embed/${videoId}`;
+    // 영상 embed (Player API로)
+    createOrReplacePlayer(videoId, 0);
 
     // 챕터 정보 가져오기
     const panel = document.getElementById('chapterPanel');
     const loading = document.getElementById('chapterLoading');
     const list = document.getElementById('chapterList');
 
-    loading.style.display = 'none';
-    panel.style.display = 'flex';
+    panel.style.display = 'none';
+    loading.style.display = 'block';
     list.innerHTML = '';
     selectedChapterIdx = -1;
+    loopEnd = null;  // 구간 반복 해제
 
     fetch(`/api/transcript/${encodeURIComponent(videoId)}`)
         .then(async r => {
@@ -236,13 +326,17 @@ function renderChapters() {
         row.querySelector('input').addEventListener('change', () => {
             selectedChapterIdx = idx;
             document.getElementById('btnLoadChapter').disabled = false;
-            // 영상도 해당 챕터 시작 시간으로 이동
-            const videoId = extractVideoId(document.getElementById('ytUrl').value.trim());
-            if (videoId) {
-                const startSec = Math.floor(ch.startSec);
-                document.getElementById('ytIframe').src =
-                    `https://www.youtube.com/embed/${videoId}?start=${startSec}&autoplay=0`;
+
+            // 영상도 해당 챕터 시작 시간으로 이동 + 구간 반복 설정
+            const startSec = Math.floor(ch.startSec);
+            const endSec = ch.endSec ? Math.floor(ch.endSec) : null;
+            loopStart = startSec;
+            loopEnd = endSec;
+
+            if (currentVideoId) {
+                createOrReplacePlayer(currentVideoId, startSec);
             }
+            updateLoopButton();
         });
         list.appendChild(row);
     });
@@ -266,13 +360,56 @@ function loadSelectedChapterTranscript() {
         showToast('이 챕터에는 자막이 없습니다');
         return;
     }
-
-    // 우측 textarea에 자막 채워넣기
     document.getElementById('rawScript').value = ch.transcript;
     showToast(`"${ch.title}" 챕터 자막 불러옴`);
 }
 
-// 초기화
+// ─────────────────────────── 컨트롤: 반복/속도/처음으로 ───────────────────────────
+function toggleLoop() {
+    loopEnabled = !loopEnabled;
+    updateLoopButton();
+    showToast(loopEnabled ? '구간 반복 ON' : '구간 반복 OFF');
+}
+
+function updateLoopButton() {
+    const btn = document.getElementById('btnLoopToggle');
+    if (!btn) return;
+    if (loopEnabled && loopEnd != null) {
+        btn.textContent = '🔁 반복 ON';
+        btn.style.background = 'var(--accent)';
+        btn.style.color = 'white';
+        btn.style.borderColor = 'var(--accent)';
+    } else if (!loopEnabled) {
+        btn.textContent = '🔁 반복 OFF';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    } else {
+        btn.textContent = '🔁 반복';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    }
+}
+
+function restartChapter() {
+    if (!ytPlayer || !ytPlayerReady) {
+        showToast('영상이 아직 준비되지 않았어요');
+        return;
+    }
+    ytPlayer.seekTo(loopStart, true);
+    ytPlayer.playVideo();
+}
+
+function changeSpeed() {
+    if (!ytPlayer || !ytPlayerReady) return;
+    const select = document.getElementById('speedSelect');
+    const rate = parseFloat(select.value);
+    ytPlayer.setPlaybackRate(rate);
+}
+
+// ─────────────────────────── 초기화 ───────────────────────────
+initYoutubeApi();
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initYoutubeLoader);
 } else {
