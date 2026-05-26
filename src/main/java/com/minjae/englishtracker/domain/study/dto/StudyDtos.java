@@ -9,6 +9,8 @@ public class StudyDtos {
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class TranslateRequest {
         private String rawScript;
+        private String videoId;
+        private String chapterTitle;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -22,6 +24,7 @@ public class StudyDtos {
     public static class TranslateResponse {
         private Long scriptId;
         private List<TranslatedSentence> sentences;
+        private boolean fromCache;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

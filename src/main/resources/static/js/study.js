@@ -25,10 +25,16 @@ function onTranslate() {
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span>번역 중...';
 
+    const payload = { rawScript: raw };
+    if (selectedChapterInfo) {
+        payload.videoId = selectedChapterInfo.videoId;
+        payload.chapterTitle = selectedChapterInfo.chapterTitle;
+    }
+
     fetch('/api/script/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rawScript: raw })
+        body: JSON.stringify(payload)
     })
     .then(async r => {
         if (!r.ok) throw new Error(await handleApiError(r));
@@ -45,6 +51,11 @@ function onTranslate() {
         if (loadChapterBtn) {
             loadChapterBtn.disabled = true;
             loadChapterBtn.textContent = '이미 학습 시작됨';
+        }
+
+        // 캐시 히트면 토스트로 알림
+        if (data.fromCache) {
+            showToast('💾 이전에 번역한 챕터입니다 (캐시 사용)');
         }
     })
     .catch(e => {
@@ -350,6 +361,8 @@ function formatTime(sec) {
     return `${m}:${rem.toString().padStart(2, '0')}`;
 }
 
+let selectedChapterInfo = null;  // 캐시 키용
+
 function loadSelectedChapterTranscript() {
     if (selectedChapterIdx < 0) {
         showToast('챕터를 선택해주세요');
@@ -361,6 +374,10 @@ function loadSelectedChapterTranscript() {
         return;
     }
     document.getElementById('rawScript').value = ch.transcript;
+    selectedChapterInfo = {
+        videoId: currentVideoId,
+        chapterTitle: ch.title
+    };
     showToast(`"${ch.title}" 챕터 자막 불러옴`);
 }
 

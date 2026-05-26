@@ -44,7 +44,12 @@ public class StudyController {
     @PostMapping("/api/script/translate")
     @ResponseBody
     public ResponseEntity<TranslateResponse> translate(@RequestBody TranslateRequest req) {
-        return ResponseEntity.ok(studyService.translateAndSave(req.getRawScript(), LocalDate.now()));
+        return ResponseEntity.ok(studyService.translateAndSave(
+                req.getRawScript(),
+                req.getVideoId(),
+                req.getChapterTitle(),
+                LocalDate.now()
+        ));
     }
 
     @PostMapping("/api/sentence/select")

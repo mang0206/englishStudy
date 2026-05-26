@@ -36,16 +36,43 @@ public class StudyService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public TranslateResponse translateAndSave(String rawScript, LocalDate date) {
+    public TranslateResponse translateAndSave(String rawScript, String videoId, String chapterTitle, LocalDate date) {
         if (rawScript == null || rawScript.isBlank()) {
             throw new DomainException(ErrorCode.EMPTY_SCRIPT);
         }
 
+        // 1. 캐시 체크: videoId + chapterTitle 조합으로 기존 번역 검색
+        if (videoId != null && chapterTitle != null) {
+            var cached = scriptRepository
+                    .findFirstByVideoIdAndChapterTitleOrderByCreatedAtDesc(videoId, chapterTitle);
+            if (cached.isPresent()) {
+                log.info("Translation cache hit: videoId={}, chapter={}", videoId, chapterTitle);
+                Script script = cached.get();
+                List<TranslatedSentence> result = script.getSentences().stream()
+                        .sorted((a, b) -> Integer.compare(a.getSeq(), b.getSeq()))
+                        .map(s -> TranslatedSentence.builder()
+                                .sentenceId(s.getId())
+                                .english(s.getEnglishText())
+                                .korean(s.getKoreanText())
+                                .build())
+                        .toList();
+                return TranslateResponse.builder()
+                        .scriptId(script.getId())
+                        .sentences(result)
+                        .fromCache(true)
+                        .build();
+            }
+        }
+
+        // 2. 캐시 미스: AI 호출
+        log.info("Translation cache miss, calling AI: videoId={}, chapter={}", videoId, chapterTitle);
         String prompt = PromptBuilder.translation(rawScript);
         String response = aiClient.generate(prompt);
 
         Script script = Script.builder()
                 .studyDate(date)
+                .videoId(videoId)
+                .chapterTitle(chapterTitle)
                 .rawInput(rawScript)
                 .build();
 
@@ -80,6 +107,7 @@ public class StudyService {
         return TranslateResponse.builder()
                 .scriptId(saved.getId())
                 .sentences(result)
+                .fromCache(false)
                 .build();
     }
 

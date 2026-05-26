@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "scripts")
+@Table(name = "scripts",
+        indexes = {
+                @Index(name = "idx_scripts_video_chapter", columnList = "video_id, chapter_title")
+        })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Script {
 
@@ -19,6 +22,12 @@ public class Script {
 
     @Column(name = "study_date", nullable = false)
     private LocalDate studyDate;
+
+    @Column(name = "video_id")
+    private String videoId;
+
+    @Column(name = "chapter_title")
+    private String chapterTitle;
 
     @Column(name = "raw_input", columnDefinition = "TEXT")
     private String rawInput;
