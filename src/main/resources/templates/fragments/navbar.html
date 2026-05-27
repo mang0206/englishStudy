@@ -6,6 +6,13 @@
     <a th:href="@{/study}" class="tab-link" th:classappend="${active == 'study'} ? 'active' : ''">학습</a>
     <a th:href="@{/review}" class="tab-link" th:classappend="${active == 'review'} ? 'active' : ''">복습</a>
     <a th:href="@{/}" class="tab-link" th:classappend="${active == 'tracker'} ? 'active' : ''">관리</a>
+
+    <!-- 학습 사이클 중에만 표시되는 타이머 -->
+    <div class="nav-timer" id="navTimer" style="display: none;">
+        <span class="timer-icon">⏱</span>
+        <span class="timer-display" id="timerDisplay">00:00</span>
+        <button class="timer-toggle" id="timerToggle" title="재개">▶</button>
+    </div>
 </nav>
 </body>
 </html>

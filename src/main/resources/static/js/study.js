@@ -16,10 +16,53 @@ let loopCheckInterval = null;
 let currentChapters = [];
 let selectedChapterIdx = -1;
 
+// ─────────────────────────── 학습 상태 저장/복구 ───────────────────────────
+const StudyState = {
+    KEY: 'studyState',
+
+    save(state) {
+        sessionStorage.setItem(this.KEY, JSON.stringify(state));
+    },
+
+    load() {
+        const raw = sessionStorage.getItem(this.KEY);
+        return raw ? JSON.parse(raw) : null;
+    },
+
+    clear() {
+        sessionStorage.removeItem(this.KEY);
+    },
+
+    // 현재 화면 상태를 캡처해서 저장
+    capture() {
+        const stageInputVisible = document.getElementById('stage-input')?.style.display !== 'none';
+        const state = {
+            stage: stageInputVisible ? 'INPUT' : 'SHADOWING',
+            videoUrl: document.getElementById('ytUrl')?.value || '',
+            currentVideoId: currentVideoId || null,
+            currentVideoTime: ytPlayer && ytPlayerReady ? Math.floor(ytPlayer.getCurrentTime()) : 0,
+            currentChapters: currentChapters || [],
+            selectedChapterIdx: selectedChapterIdx,
+            selectedChapterInfo: selectedChapterInfo,
+            rawScript: document.getElementById('rawScript')?.value || '',
+            translatedSentences: translatedSentences || [],
+            loopEnabled: loopEnabled,
+            loopStart: loopStart,
+            loopEnd: loopEnd,
+        };
+        this.save(state);
+    }
+};
+
 // ─────────────────────────── 번역 ───────────────────────────
 function onTranslate() {
     const raw = document.getElementById('rawScript').value.trim();
     if (!raw) { showToast('스크립트를 입력해주세요'); return; }
+
+    // 학습 타이머 자동 시작 (이미 실행 중이면 무시됨)
+    if (typeof StudyTimer !== 'undefined') {
+        StudyTimer.start();
+    }
 
     const btn = document.getElementById('btnTranslate');
     btn.disabled = true;
@@ -57,6 +100,9 @@ function onTranslate() {
         if (data.fromCache) {
             showToast('💾 이전에 번역한 챕터입니다 (캐시 사용)');
         }
+
+        // 학습 단계 진입했으니 상태 저장
+        StudyState.capture();
     })
     .catch(e => {
         showToast(e.message);
@@ -431,4 +477,95 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initYoutubeLoader);
 } else {
     initYoutubeLoader();
+}
+
+// ─────────────────────────── 학습 페이지 진입 시 복구 ───────────────────────────
+function restoreStudyState() {
+    const state = StudyState.load();
+    if (!state) return;
+
+    // 다른 단계였으면 해당 페이지로 자동 이동
+    if (state.stage === 'EXPANSION') {
+        location.href = '/study/expansion';
+        return;
+    }
+    if (state.stage === 'PROMPT') {
+        location.href = '/study/prompt';
+        return;
+    }
+
+    // 1. URL 입력값 복구
+    if (state.videoUrl) {
+        document.getElementById('ytUrl').value = state.videoUrl;
+    }
+
+    // 2. 챕터 정보 복구
+    if (state.currentChapters && state.currentChapters.length > 0) {
+        currentChapters = state.currentChapters;
+        selectedChapterIdx = state.selectedChapterIdx;
+        selectedChapterInfo = state.selectedChapterInfo;
+        loopStart = state.loopStart || 0;
+        loopEnd = state.loopEnd || null;
+        loopEnabled = state.loopEnabled;
+        renderChapters();
+        document.getElementById('chapterPanel').style.display = 'flex';
+
+        // 선택됐던 챕터 라디오 복원
+        if (selectedChapterIdx >= 0) {
+            const radio = document.querySelector(`input[name="chapter"][value="${selectedChapterIdx}"]`);
+            if (radio) radio.checked = true;
+            document.getElementById('btnLoadChapter').disabled = false;
+        }
+        updateLoopButton();
+    }
+
+    // 3. 영상 복구
+    if (state.currentVideoId) {
+        currentVideoId = state.currentVideoId;
+        createOrReplacePlayer(state.currentVideoId, state.currentVideoTime || 0);
+    }
+
+    // 4. 단계별 화면 복구
+    if (state.stage === 'SHADOWING' && state.translatedSentences.length > 0) {
+        translatedSentences = state.translatedSentences;
+        renderScriptList();
+        document.getElementById('stage-input').style.display = 'none';
+        document.getElementById('stage-script').style.display = 'flex';
+
+        // 챕터 불러오기 버튼은 비활성화 (이미 학습 시작했으니)
+        const loadChapterBtn = document.getElementById('btnLoadChapter');
+        if (loadChapterBtn) {
+            loadChapterBtn.disabled = true;
+            loadChapterBtn.textContent = '이미 학습 시작됨';
+        }
+    } else if (state.rawScript) {
+        document.getElementById('rawScript').value = state.rawScript;
+    }
+}
+
+// ─────────────────────────── 페이지 떠날 때 자동 저장 ───────────────────────────
+function saveStudyStateOnLeave() {
+    // 학습이 어느 정도 진행됐을 때만 저장 (빈 상태는 저장 X)
+    const hasContent =
+        document.getElementById('rawScript')?.value ||
+        currentVideoId ||
+        translatedSentences.length > 0;
+    if (hasContent) {
+        StudyState.capture();
+    }
+}
+
+// 페이지 떠날 때 + 탭 비활성화 시 자동 저장
+window.addEventListener('beforeunload', () => {
+    saveStudyStateOnLeave();
+    if (typeof StudyTimer !== 'undefined') {
+        StudyTimer.pauseOnLeave();
+    }
+});
+
+// 페이지 진입 시 자동 복구
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreStudyState);
+} else {
+    restoreStudyState();
 }

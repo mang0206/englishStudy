@@ -1,6 +1,7 @@
 package com.minjae.englishtracker.domain.tracker.controller;
 
 import com.minjae.englishtracker.domain.tracker.dto.TrackerDtos.DayViewDto;
+import com.minjae.englishtracker.domain.tracker.dto.TrackerDtos.StudyTimeRequest;
 import com.minjae.englishtracker.domain.tracker.service.TrackerService;
 import com.minjae.englishtracker.global.enums.StudyBlock;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,13 @@ public class TrackerController {
     public ResponseEntity<Void> resetDay(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         trackerService.resetDay(date);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/tracker/study-time")
+    @ResponseBody
+    public ResponseEntity<Void> addStudyTime(@RequestBody StudyTimeRequest req) {
+        trackerService.addStudySeconds(LocalDate.now(), StudyBlock.EXPANSION, req.getSeconds());
         return ResponseEntity.ok().build();
     }
 }

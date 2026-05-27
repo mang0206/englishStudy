@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "daily_records",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"study_date", "block"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"study_date", "block"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DailyRecord {
 
@@ -28,6 +28,10 @@ public class DailyRecord {
 
     @Column(name = "total_tasks", nullable = false)
     private int totalTasks;
+
+    @Column(name = "study_seconds", nullable = false)
+    @Builder.Default
+    private int studySeconds = 0;
 
     @Column(length = 1000)
     private String memo;

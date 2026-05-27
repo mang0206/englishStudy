@@ -8,11 +8,6 @@ import java.util.Map;
 public class TaskDefinition {
 
     public static final Map<StudyBlock, List<String>> TASKS = Map.of(
-        StudyBlock.NOESAEKIM, List.of(
-            "실전회화 챕터 하나 선택",
-            "문장 소리 내서 따라 말하기",
-            "오늘 쓸 표현 3개 체크해두기"
-        ),
         StudyBlock.SHADOWING, List.of(
             "15분 — 스크립트 없이 영상 반복 시청",
             "30분 — 스크립트 보면서 천천히 따라 말하기",

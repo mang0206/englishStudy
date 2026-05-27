@@ -24,7 +24,7 @@ public class TrackerService {
     @Transactional(readOnly = true)
     public DayViewDto getDayView(LocalDate date) {
         List<BlockViewDto> blocks = new ArrayList<>();
-        int totalTasks = 0, completedTasks = 0;
+        int totalTasks = 0, completedTasks = 0, totalStudySeconds = 0;
 
         for (StudyBlock block : StudyBlock.values()) {
             List<String> taskLabels = TaskDefinition.get(block);
@@ -45,8 +45,9 @@ public class TrackerService {
             int total = taskLabels.size();
             int pct = total > 0 ? (int) Math.round((double) done / total * 100) : 0;
 
-            String memo = dailyRecordRepository.findByStudyDateAndBlock(date, block)
-                    .map(DailyRecord::getMemo).orElse("");
+            DailyRecord dr = dailyRecordRepository.findByStudyDateAndBlock(date, block).orElse(null);
+            String memo = dr != null ? dr.getMemo() : "";
+            int blockSeconds = dr != null ? dr.getStudySeconds() : 0;
 
             blocks.add(BlockViewDto.builder()
                     .block(block)
@@ -63,6 +64,7 @@ public class TrackerService {
 
             totalTasks += total;
             completedTasks += done;
+            totalStudySeconds += blockSeconds;
         }
 
         return DayViewDto.builder()
@@ -70,6 +72,7 @@ public class TrackerService {
                 .blocks(blocks)
                 .totalTasks(totalTasks)
                 .completedTasks(completedTasks)
+                .totalStudySeconds(totalStudySeconds)
                 .streakDays(calcStreak(date))
                 .weekDays(buildWeekDays(date))
                 .build();
@@ -107,7 +110,9 @@ public class TrackerService {
         for (StudyBlock block : StudyBlock.values()) {
             taskCheckRepository.deleteByStudyDateAndBlock(date, block);
             dailyRecordRepository.findByStudyDateAndBlock(date, block).ifPresent(r -> {
-                r.setCompletedTasks(0); r.setMemo("");
+                r.setCompletedTasks(0);
+                r.setMemo("");
+                r.setStudySeconds(0);
                 dailyRecordRepository.save(r);
             });
         }
@@ -130,6 +135,25 @@ public class TrackerService {
                     );
         }
         syncDailyRecord(date, block);
+    }
+
+    /**
+     * 학습 사이클 완료 시 누적된 시간(초)을 해당 블록에 더한다.
+     */
+    @Transactional
+    public void addStudySeconds(LocalDate date, StudyBlock block, int seconds) {
+        if (seconds <= 0) return;
+
+        DailyRecord record = dailyRecordRepository.findByStudyDateAndBlock(date, block)
+                .orElseGet(() -> DailyRecord.builder()
+                        .studyDate(date)
+                        .block(block)
+                        .completedTasks(0)
+                        .totalTasks(TaskDefinition.count(block))
+                        .build());
+
+        record.setStudySeconds(record.getStudySeconds() + seconds);
+        dailyRecordRepository.save(record);
     }
 
     private void syncDailyRecord(LocalDate date, StudyBlock block) {

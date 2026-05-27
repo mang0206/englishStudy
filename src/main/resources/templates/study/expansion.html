@@ -10,6 +10,7 @@
 <nav th:replace="~{fragments/navbar :: navbar('study')}"></nav>
 
 <div class="app">
+
     <div class="expansion-split">
 
         <!-- 좌측: 학습 영역 (기존 구조 그대로) -->
@@ -73,6 +74,18 @@
 </div>
 
 <script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/timer.js}"></script>
 <script th:src="@{/js/expansion.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navTimer = document.getElementById('navTimer');
+        if (navTimer) navTimer.style.display = 'inline-flex';
+        StudyTimer.mount(
+            document.getElementById('timerDisplay'),
+            document.getElementById('timerToggle'),
+            true
+        );
+    });
+</script>
 </body>
 </html>

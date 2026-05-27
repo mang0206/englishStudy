@@ -1,5 +1,5 @@
 let selectedList = [];
-let currentIdx = 0;
+let currentIdx = parseInt(sessionStorage.getItem('expansion.currentIdx') || '0', 10)
 
 document.addEventListener('DOMContentLoaded', () => {
     selectedList = Session.get('selectedSentences') || [];
@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => location.href = '/study', 1200);
         return;
     }
+    // 범위 벗어난 인덱스 방어
+    if (currentIdx >= selectedList.length) currentIdx = 0;
     renderCurrent();
 });
 
@@ -25,6 +27,36 @@ function renderCurrent() {
 
     document.getElementById('btnFeedback').style.display = '';
     document.getElementById('btnNext').style.display = 'none';
+
+    // 현재 문장에 대해 sessionStorage에 임시 저장된 상태가 있으면 복구
+    const raw = sessionStorage.getItem('expansion.current');
+    if (raw) {
+        try {
+            const cached = JSON.parse(raw);
+            if (cached.idx === currentIdx) {
+                // 입력값 복구
+                if (cached.inputs) {
+                    document.querySelectorAll('.exp-row').forEach(row => {
+                        const type = row.dataset.type;
+                        const val = cached.inputs[type];
+                        if (val) row.querySelector('.exp-input').value = val;
+                    });
+                }
+                // 피드백 결과 복구 (있으면)
+                if (cached.results && cached.results.length > 0) {
+                    renderFeedback(cached.results);
+                    document.getElementById('btnFeedback').style.display = 'none';
+                    document.getElementById('btnNext').style.display = '';
+                }
+            } else {
+                // 다른 문장의 임시 저장은 비움
+                sessionStorage.removeItem('expansion.current');
+            }
+        } catch (e) {
+            console.warn('[expansion] cached state parse failed:', e);
+            sessionStorage.removeItem('expansion.current');
+        }
+    }
 }
 
 function onFeedback() {
@@ -63,6 +95,14 @@ function onFeedback() {
         });
         Session.set('expansionResults', all);
 
+        // 현재 문장의 입력값 + 피드백 결과를 sessionStorage에 임시 저장
+        // (다른 탭 다녀와도 복구되도록)
+        sessionStorage.setItem('expansion.current', JSON.stringify({
+            idx: currentIdx,
+            inputs: expansions,
+            results: data.results,
+        }));
+
         btn.style.display = 'none';
         btn.disabled = false;
         btn.textContent = '피드백 받기';
@@ -92,7 +132,11 @@ function renderFeedback(results) {
 
 function onNext() {
     currentIdx++;
+    sessionStorage.setItem('expansion.currentIdx', String(currentIdx));
+    sessionStorage.removeItem('expansion.current');  // 다음 문장으로 넘어가니 임시 저장 정리
+
     if (currentIdx >= selectedList.length) {
+        sessionStorage.removeItem('expansion.currentIdx');
         location.href = '/study/prompt';
     } else {
         renderCurrent();
@@ -171,3 +215,13 @@ if (document.readyState === 'loading') {
 } else {
     initDictionary();
 }
+
+// ─────────────────────────── 학습 단계 표시 ───────────────────────────
+// 확장 페이지에 들어왔다는 것 자체를 sessionStorage에 기록.
+// 다른 탭 갔다가 학습 탭으로 돌아왔을 때 이 페이지로 자동 복귀하기 위함.
+(function markExpansionStage() {
+    const raw = sessionStorage.getItem('studyState');
+    const state = raw ? JSON.parse(raw) : {};
+    state.stage = 'EXPANSION';
+    sessionStorage.setItem('studyState', JSON.stringify(state));
+})();

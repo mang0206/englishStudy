@@ -10,85 +10,89 @@
 <nav th:replace="~{fragments/navbar :: navbar('tracker')}"></nav>
 
 <div class="app">
-<div class="tracker-app">
+    <div class="tracker-app">
 
-    <div class="header">
-        <div class="date-nav">
-            <a th:href="@{/tracker/{date}(date=${day.date.minusDays(1)})}" class="btn small">←</a>
-            <span class="date-label">
+        <div class="header">
+            <div class="date-nav">
+                <a th:href="@{/tracker/{date}(date=${day.date.minusDays(1)})}" class="btn small">←</a>
+                <span class="date-label">
                 <span th:if="${day.date == today}">오늘 · </span>
                 <span th:text="${#temporals.format(day.date, 'MM/dd')}"></span>
                 <span th:text="${day.date.dayOfWeek.getDisplayName(T(java.time.format.TextStyle).SHORT, T(java.util.Locale).KOREAN)}"></span>
             </span>
-            <a th:href="@{/tracker/{date}(date=${day.date.plusDays(1)})}" class="btn small">→</a>
+                <a th:href="@{/tracker/{date}(date=${day.date.plusDays(1)})}" class="btn small">→</a>
+            </div>
+            <button class="btn small" data-action="reset" th:attr="data-date=${day.date}">초기화</button>
         </div>
-        <button class="btn small" data-action="reset" th:attr="data-date=${day.date}">초기화</button>
-    </div>
 
-    <div class="progress-bar-wrap">
-        <div class="progress-bar" th:style="|width:${day.progressPercent}%|"></div>
-    </div>
-
-    <div class="stats">
-        <div class="stat">
-            <div class="stat-label">완료</div>
-            <div class="stat-val" id="statDone" th:text="${day.completedTasks} + ' / ' + ${day.totalTasks}"></div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" th:style="|width:${day.progressPercent}%|"></div>
         </div>
-        <div class="stat">
-            <div class="stat-label">연속 학습</div>
-            <div class="stat-val" th:text="${day.streakDays} + '일'"></div>
-        </div>
-    </div>
 
-    <div class="blocks">
-        <div th:each="block : ${day.blocks}" class="block" th:id="|block-${block.block.name()}|">
-            <div class="block-header" data-action="toggle-block" th:attr="data-block=${block.block.name()}">
-                <div class="block-icon" th:text="${block.icon}"></div>
-                <div class="block-meta">
-                    <div class="block-title" th:text="${block.displayName}"></div>
-                    <div class="block-time" th:text="${block.timeLabel}"></div>
-                </div>
-                <div class="block-prog">
-                    <div class="mini-bar-wrap">
-                        <div class="mini-bar" th:id="|miniBar-${block.block.name()}|"
-                             th:style="|width:${block.progressPercent}%|"></div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">완료</div>
+                <div class="stat-val" id="statDone" th:text="${day.completedTasks} + ' / ' + ${day.totalTasks}"></div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">학습 시간</div>
+                <div class="stat-val" th:text="${day.studyTimeLabel}"></div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">연속 학습</div>
+                <div class="stat-val" th:text="${day.streakDays} + '일'"></div>
+            </div>
+        </div>
+
+        <div class="blocks">
+            <div th:each="block : ${day.blocks}" class="block" th:id="|block-${block.block.name()}|">
+                <div class="block-header" data-action="toggle-block" th:attr="data-block=${block.block.name()}">
+                    <div class="block-icon" th:text="${block.icon}"></div>
+                    <div class="block-meta">
+                        <div class="block-title" th:text="${block.displayName}"></div>
+                        <div class="block-time" th:text="${block.timeLabel}"></div>
                     </div>
-                    <span class="block-prog-text" th:id="|blockProg-${block.block.name()}|"
-                          th:text="${block.completedTasks} + '/' + ${block.totalTasks}"></span>
+                    <div class="block-prog">
+                        <div class="mini-bar-wrap">
+                            <div class="mini-bar" th:id="|miniBar-${block.block.name()}|"
+                                 th:style="|width:${block.progressPercent}%|"></div>
+                        </div>
+                        <span class="block-prog-text" th:id="|blockProg-${block.block.name()}|"
+                              th:text="${block.completedTasks} + '/' + ${block.totalTasks}"></span>
+                    </div>
+                    <span class="chevron" th:id="|chev-${block.block.name()}|">▼</span>
                 </div>
-                <span class="chevron" th:id="|chev-${block.block.name()}|">▼</span>
-            </div>
-            <div class="block-body" th:id="|body-${block.block.name()}|">
-                <div th:each="task, tIter : ${block.taskLabels}" class="task"
-                     data-action="toggle-task"
-                     th:attr="data-date=${day.date}, data-block=${block.block.name()}, data-task-index=${tIter.index}">
-                    <div class="task-check" th:id="|check-${block.block.name()}-${tIter.index}|"
-                         th:classappend="${block.taskChecks[tIter.index]} ? 'done' : ''"></div>
-                    <span class="task-label" th:id="|label-${block.block.name()}-${tIter.index}|"
-                          th:classappend="${block.taskChecks[tIter.index]} ? 'done' : ''"
-                          th:text="${task}"></span>
-                </div>
-                <div class="note-area">
-                    <div class="note-label">오늘의 메모</div>
-                    <textarea class="note-input" placeholder="배운 표현, 어려웠던 점 등..."
-                              data-action="save-memo"
-                              th:attr="data-date=${day.date}, data-block=${block.block.name()}"
-                              th:text="${block.memo}"></textarea>
+                <div class="block-body" th:id="|body-${block.block.name()}|">
+                    <div th:each="task, tIter : ${block.taskLabels}" class="task"
+                         data-action="toggle-task"
+                         th:attr="data-date=${day.date}, data-block=${block.block.name()}, data-task-index=${tIter.index}">
+                        <div class="task-check" th:id="|check-${block.block.name()}-${tIter.index}|"
+                             th:classappend="${block.taskChecks[tIter.index]} ? 'done' : ''"></div>
+                        <span class="task-label" th:id="|label-${block.block.name()}-${tIter.index}|"
+                              th:classappend="${block.taskChecks[tIter.index]} ? 'done' : ''"
+                              th:text="${task}"></span>
+                    </div>
+                    <div class="note-area">
+                        <div class="note-label">오늘의 메모</div>
+                        <textarea class="note-input" placeholder="배운 표현, 어려웠던 점 등..."
+                                  data-action="save-memo"
+                                  th:attr="data-date=${day.date}, data-block=${block.block.name()}"
+                                  th:text="${block.memo}"></textarea>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="week-section">
-        <div class="week-title">이번 주</div>
-        <div class="week-grid">
-            <div th:each="wd : ${day.weekDays}" class="day-cell"
-                 th:classappend="${wd.today} ? 'today' : (${wd.future} ? 'future' : (${wd.fullDone} ? 'done-full' : (${wd.partialDone} ? 'done-partial' : 'past')))"
-                 th:text="${wd.dayName}" th:title="${#temporals.format(wd.date, 'MM/dd')}"></div>
+        <div class="week-section">
+            <div class="week-title">이번 주</div>
+            <div class="week-grid">
+                <div th:each="wd : ${day.weekDays}" class="day-cell"
+                     th:classappend="${wd.today} ? 'today' : (${wd.future} ? 'future' : (${wd.fullDone} ? 'done-full' : (${wd.partialDone} ? 'done-partial' : 'past')))"
+                     th:text="${wd.dayName}" th:title="${#temporals.format(wd.date, 'MM/dd')}"></div>
+            </div>
         </div>
-    </div>
 
-</div>
+    </div>
 </div>
 
 <script th:src="@{/js/common.js}"></script>

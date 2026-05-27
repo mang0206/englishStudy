@@ -30,7 +30,7 @@
 
     <div style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
         <a href="/" class="btn">관리 탭으로 →</a>
-        <a href="/study" class="btn">새 학습 시작</a>
+        <button class="btn" onclick="startNewStudy()">새 학습 시작</button>
     </div>
 
 </div>
@@ -38,5 +38,26 @@
 
 <script th:src="@{/js/common.js}"></script>
 <script th:src="@{/js/prompt.js}"></script>
+<script th:src="@{/js/timer.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        StudyTimer.commitAndReset().then(() => {
+            console.log('[StudyTimer] 학습 시간이 저장되었습니다.');
+        });
+
+        // 학습 단계 = PROMPT 로 기록 (다른 탭 갔다 와도 prompt 페이지로 복귀)
+        const raw = sessionStorage.getItem('studyState');
+        const state = raw ? JSON.parse(raw) : {};
+        state.stage = 'PROMPT';
+        sessionStorage.setItem('studyState', JSON.stringify(state));
+    });
+
+    // "새 학습 시작" 클릭 시에만 학습 상태 + 세션 데이터 모두 초기화
+    function startNewStudy() {
+        sessionStorage.clear();
+        sessionStorage.setItem('studyState.cleared', 'true');
+        location.href = '/study';
+    }
+</script>
 </body>
 </html>

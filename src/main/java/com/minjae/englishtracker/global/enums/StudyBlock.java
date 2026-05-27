@@ -1,7 +1,6 @@
 package com.minjae.englishtracker.global.enums;
 
 public enum StudyBlock {
-    NOESAEKIM("뇌새김", 30, "📘"),
     SHADOWING("쉐도잉", 90, "🎧"),
     EXPANSION("문장 확장", 90, "🧩"),
     AI_CONVERSATION("AI 회화", 120, "🗣"),
