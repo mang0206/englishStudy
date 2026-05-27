@@ -10,44 +10,66 @@
 <nav th:replace="~{fragments/navbar :: navbar('study')}"></nav>
 
 <div class="app">
-<div class="exp-screen">
+    <div class="expansion-split">
 
-    <div class="exp-progress" id="expProgress">문장 1 / 1</div>
-    <div class="exp-sentence" id="expSentence">원문 로딩 중...</div>
+        <!-- 좌측: 학습 영역 (기존 구조 그대로) -->
+        <div class="exp-main">
+            <div class="exp-screen">
 
-    <div id="expRows">
-        <div class="exp-row" data-type="NEGATIVE">
-            <div class="exp-top"><span class="exp-tag">부정형</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
+                <div class="exp-progress" id="expProgress">문장 1 / 1</div>
+                <div class="exp-sentence" id="expSentence">원문 로딩 중...</div>
+
+                <div id="expRows">
+                    <div class="exp-row" data-type="NEGATIVE">
+                        <div class="exp-top"><span class="exp-tag">부정형</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                    <div class="exp-row" data-type="PAST">
+                        <div class="exp-top"><span class="exp-tag">과거형</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                    <div class="exp-row" data-type="FUTURE">
+                        <div class="exp-top"><span class="exp-tag">미래형</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                    <div class="exp-row" data-type="QUESTION">
+                        <div class="exp-top"><span class="exp-tag">질문형</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                    <div class="exp-row" data-type="REASON">
+                        <div class="exp-top"><span class="exp-tag">이유 추가</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                    <div class="exp-row" data-type="CONDITION">
+                        <div class="exp-top"><span class="exp-tag">조건</span><input type="text" class="exp-input" /></div>
+                        <div class="exp-feedback" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                    <button class="btn primary" id="btnFeedback" onclick="onFeedback()">피드백 받기</button>
+                    <button class="btn primary" id="btnNext" onclick="onNext()" style="display:none;">다음 문장 →</button>
+                </div>
+
+            </div>
         </div>
-        <div class="exp-row" data-type="PAST">
-            <div class="exp-top"><span class="exp-tag">과거형</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
+
+        <!-- 우측: 사전 패널 -->
+        <div class="dict-pane">
+            <div class="dict-header">
+                <span>📖 한영 사전</span>
+            </div>
+            <div class="dict-search">
+                <input type="text" id="dictInput" class="exp-input"
+                       placeholder="한글 단어 입력 후 Enter" />
+                <button class="btn small primary" id="dictBtn">검색</button>
+            </div>
+            <div id="dictResult" class="dict-result">
+                <div class="dict-empty">학습 중에 떠오르는 한글 단어를<br>검색해보세요.</div>
+            </div>
         </div>
-        <div class="exp-row" data-type="FUTURE">
-            <div class="exp-top"><span class="exp-tag">미래형</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
-        </div>
-        <div class="exp-row" data-type="QUESTION">
-            <div class="exp-top"><span class="exp-tag">질문형</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
-        </div>
-        <div class="exp-row" data-type="REASON">
-            <div class="exp-top"><span class="exp-tag">이유 추가</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
-        </div>
-        <div class="exp-row" data-type="CONDITION">
-            <div class="exp-top"><span class="exp-tag">조건</span><input type="text" class="exp-input" /></div>
-            <div class="exp-feedback" style="display:none;"></div>
-        </div>
+
     </div>
-
-    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-        <button class="btn primary" id="btnFeedback" onclick="onFeedback()">피드백 받기</button>
-        <button class="btn primary" id="btnNext" onclick="onNext()" style="display:none;">다음 문장 →</button>
-    </div>
-
-</div>
 </div>
 
 <script th:src="@{/js/common.js}"></script>

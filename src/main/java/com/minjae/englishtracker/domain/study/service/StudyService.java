@@ -21,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 
+import com.minjae.englishtracker.domain.study.dto.DictionaryDtos.*;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -208,5 +211,36 @@ public class StudyService {
                         .koreanText(s.getScriptSentence().getKoreanText())
                         .build())
                 .toList();
+    }
+
+    public DictionaryResponse lookupDictionary(String koreanWord) {
+        if (koreanWord == null || koreanWord.isBlank()) {
+            throw new DomainException(ErrorCode.EMPTY_SCRIPT, "검색할 단어를 입력해주세요");
+        }
+
+        String prompt = PromptBuilder.dictionary(koreanWord.trim());
+        String response = aiClient.generate(prompt);
+
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode arr = root.path("translations");
+            List<Translation> translations = new ArrayList<>();
+            for (JsonNode node : arr) {
+                translations.add(Translation.builder()
+                        .english(node.path("english").asText())
+                        .pos(node.path("pos").asText())
+                        .nuance(node.path("nuance").asText())
+                        .example(node.path("example").asText())
+                        .exampleKorean(node.path("exampleKorean").asText())
+                        .build());
+            }
+            return DictionaryResponse.builder()
+                    .query(koreanWord)
+                    .translations(translations)
+                    .build();
+        } catch (Exception e) {
+            log.error("Dictionary parse failed. raw={}", response, e);
+            throw new DomainException(ErrorCode.AI_PARSING_FAILED, e);
+        }
     }
 }

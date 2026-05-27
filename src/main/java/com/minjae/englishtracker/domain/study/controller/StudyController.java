@@ -70,4 +70,11 @@ public class StudyController {
     public ResponseEntity<List<SelectedSentenceDto>> getByIds(@RequestBody List<Long> ids) {
         return ResponseEntity.ok(studyService.getSelectedByIds(ids));
     }
+
+    @GetMapping("/api/dictionary")
+    @ResponseBody
+    public ResponseEntity<com.minjae.englishtracker.domain.study.dto.DictionaryDtos.DictionaryResponse>
+    lookupDictionary(@RequestParam("q") String query) {
+        return ResponseEntity.ok(studyService.lookupDictionary(query));
+    }
 }

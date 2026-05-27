@@ -105,3 +105,69 @@ function escapeHtml(s) {
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[c]));
 }
+
+// ─────────────────────────── 한영 사전 ───────────────────────────
+function initDictionary() {
+    const input = document.getElementById('dictInput');
+    const btn = document.getElementById('dictBtn');
+    if (!input || !btn) return;
+
+    btn.addEventListener('click', searchDictionary);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') searchDictionary();
+    });
+}
+
+function searchDictionary() {
+    const q = document.getElementById('dictInput').value.trim();
+    if (!q) {
+        showToast('검색할 단어를 입력해주세요');
+        return;
+    }
+
+    const result = document.getElementById('dictResult');
+    result.innerHTML = '<div class="dict-empty"><span class="loader"></span>검색 중...</div>';
+
+    fetch(`/api/dictionary?q=${encodeURIComponent(q)}`)
+        .then(async r => {
+            if (!r.ok) throw new Error(await handleApiError(r));
+            return r.json();
+        })
+        .then(data => {
+            renderDictResult(data);
+        })
+        .catch(e => {
+            result.innerHTML = `<div class="dict-empty" style="color: var(--warn);">검색 실패: ${escapeHtml(e.message)}</div>`;
+        });
+}
+
+function renderDictResult(data) {
+    const result = document.getElementById('dictResult');
+    const items = (data.translations || []).map(t => `
+        <div class="dict-translation-item">
+            <div class="dict-en-row">
+                <span class="dict-en">${escapeHtml(t.english)}</span>
+                ${t.pos ? `<span class="dict-pos">${escapeHtml(t.pos)}</span>` : ''}
+            </div>
+            <div class="dict-nuance">${escapeHtml(t.nuance || '')}</div>
+            ${t.example ? `
+                <div class="dict-example-inline">
+                    <div class="dict-example-en-inline">${escapeHtml(t.example)}</div>
+                    <div class="dict-example-ko-inline">${escapeHtml(t.exampleKorean || '')}</div>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+
+    result.innerHTML = `
+        <div class="dict-query">"${escapeHtml(data.query)}"</div>
+        ${items}
+    `;
+}
+
+// expansion.js 초기화 흐름에 추가
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDictionary);
+} else {
+    initDictionary();
+}
