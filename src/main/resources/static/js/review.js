@@ -57,24 +57,29 @@ function toggleDetail(id) {
 }
 
 function renderDetail(wrap, d) {
-    const rows = d.expansions.map((e, i) => {
+    const rows = d.expansions.map(e => {
         const isEmpty = !e.userInput;
         const inputCls = isEmpty ? 'rv-input-mock empty' : 'rv-input-mock';
         const inputText = isEmpty ? '미작성' : escapeHtml(e.userInput);
-        const fbCls = e.correct ? 'rv-feedback' : 'rv-feedback fix';
-        const fbText = isEmpty ? '작성하지 않았습니다' : escapeHtml(e.feedbackText || '');
+
         const badge = e.correct
-            ? '<span class="exp-badge ok">✅ 자연스러워요</span> '
-            : '<span class="exp-badge fix">수정 필요</span> ';
+            ? '<span class="exp-badge ok">✅ 자연스러워요</span>'
+            : '<span class="exp-badge fix">수정 필요</span>';
+
+        // 수정 필요한 경우만 피드백 펼쳐서 표시 (미작성 포함)
+        const showFeedback = !e.correct;
+        const fbText = isEmpty ? '작성하지 않았습니다' : escapeHtml(e.feedbackText || '');
 
         return `
             <div class="rv-exp-row">
                 <div class="rv-exp-top">
                     <span class="exp-tag">${e.typeName}</span>
                     <span class="${inputCls}">${inputText}</span>
-                    <button class="btn small" onclick="toggleFb(${d.selectedId}, ${i})">내용 보기</button>
+                    ${badge}
                 </div>
-                <div class="${fbCls}" id="fb-${d.selectedId}-${i}">${badge}${fbText}</div>
+                ${showFeedback && fbText ? `
+                    <div class="rv-feedback fix show">${fbText}</div>
+                ` : ''}
             </div>
         `;
     }).join('');
@@ -83,11 +88,6 @@ function renderDetail(wrap, d) {
         <div class="rv-title">원문: "${escapeHtml(d.englishText)}"</div>
         ${rows}
     `;
-}
-
-function toggleFb(selectedId, idx) {
-    const fb = document.getElementById(`fb-${selectedId}-${idx}`);
-    if (fb) fb.classList.toggle('show');
 }
 
 function formatDate(d) {
