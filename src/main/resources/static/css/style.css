@@ -520,3 +520,11 @@ body {
     color: var(--text-muted);
     line-height: 1.4;
 }
+
+/* 데모: 선택 고정 — 미선택 문장 잠금 표시 */
+.script-block.demo-locked {
+    opacity: 0.4;
+}
+.script-block.checking .check-mock {
+    cursor: default;   /* 기존 pointer → 데모에선 클릭 불가 느낌 */
+}

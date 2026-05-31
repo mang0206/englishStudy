@@ -1,3 +1,6 @@
+// demo-prompt.js
+// prompt.js 기반. 프롬프트 생성 로직 동일, 단 타이머는 서버에 commit하지 않고 reset만.
+
 document.addEventListener('DOMContentLoaded', () => {
     const results = Session.get('expansionResults') || [];
     const expressions = results.map(r => `"${r.englishText}"`).join(', ');
@@ -28,8 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('part1').textContent = part1;
     document.getElementById('part2').textContent = part2;
 
-    Session.clear('selectedSentences');
-    Session.clear('expansionResults');
+    // 데모: 서버 commit 없이 타이머만 정리
+    if (typeof StudyTimer !== 'undefined') {
+        StudyTimer.reset();
+    }
 });
 
 function copyPrompt(id) {
@@ -37,4 +42,11 @@ function copyPrompt(id) {
     navigator.clipboard.writeText(text)
         .then(() => showToast('복사되었습니다'))
         .catch(() => showToast('복사 실패'));
+}
+
+// 데모: 새 학습 시작 → 데모 학습 페이지로, 데모 관련 세션만 정리
+function startNewStudy() {
+    Session.clear('selectedSentences');
+    Session.clear('expansionResults');
+    location.href = '/demo/study';
 }

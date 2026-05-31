@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[데모] 복습</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav th:replace="~{demo/fragments/navbar :: navbar('review')}"></nav>
+
+<div class="app">
+    <div class="review-app">
+
+        <div class="search-bar">
+            <span style="font-size:14px; color: var(--text-muted);">🔍</span>
+            <input type="text" id="searchInput" placeholder="알파벳으로 검색..." oninput="onSearchInput()">
+        </div>
+
+        <div id="reviewList"></div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/demo-data.js}"></script>
+<script th:src="@{/js/demo-review.js}"></script>
+</body>
+</html>

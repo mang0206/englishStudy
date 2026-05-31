@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[데모] 영어 학습 트래커 - 학습</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav th:replace="~{demo/fragments/navbar :: navbar('study')}"></nav>
+
+<div class="app">
+    <div class="split">
+
+        <!-- 좌측: 영상 + 챕터 선택 -->
+        <div class="pane">
+            <div class="pane-header">
+                <span>Easy English (YouTube)</span>
+                <a href="https://www.youtube.com/@easyenglish551/videos" target="_blank" class="btn small">채널 열기</a>
+            </div>
+
+            <div class="pane-body study-left-body">
+                <div style="padding: 10px 12px; border-bottom: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0;">
+                    <input type="text" id="ytUrl" class="exp-input"
+                           placeholder="유튜브 영상 URL 붙여넣기"
+                           style="flex:1;" />
+                    <button class="btn small" id="btnLoadVideo">불러오기</button>
+                </div>
+
+                <div class="study-video-section">
+                    <div id="ytPlayer" style="width: 100%; height: 100%;"></div>
+                </div>
+
+                <div class="study-video-controls">
+                    <button class="btn small" id="btnLoopToggle">🔁 반복</button>
+                    <button class="btn small" id="btnRestart">⏪ 처음부터</button>
+                    <select id="speedSelect" class="btn small" style="cursor: pointer;">
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                    </select>
+                </div>
+
+                <div id="chapterPanel" class="study-chapter-section" style="display: none;">
+                    <div class="study-chapter-header">📚 챕터 선택 <span class="notice" style="margin-left:6px;">데모: Job Interview만 선택 가능</span></div>
+                    <div id="chapterList" class="study-chapter-list"></div>
+                    <div class="study-chapter-footer">
+                        <button class="btn primary" id="btnLoadChapter" disabled>
+                            선택한 챕터 스크립트 불러오기
+                        </button>
+                    </div>
+                </div>
+
+                <div id="chapterLoading" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; display: none; flex-shrink: 0;">
+                    <span class="loader"></span>챕터 정보 불러오는 중...
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측: 스크립트 입력 / 학습 -->
+        <div class="pane">
+            <div id="stage-input" class="pane-stage">
+                <div class="pane-header">스크립트 입력</div>
+                <div class="pane-body" style="display: flex; flex-direction: column;">
+                <textarea id="rawScript" class="script-textarea"
+                          placeholder="좌측에서 영상을 불러오고 챕터를 선택하면 자막이 자동으로 채워져요."></textarea>
+                </div>
+                <div class="pane-footer">
+                    <button class="btn primary" id="btnTranslate" onclick="onTranslate()">번역 시작</button>
+                </div>
+            </div>
+
+            <div id="stage-script" class="pane-stage" style="display:none;">
+                <div class="pane-header">
+                    <span id="paneTitle">학습 스크립트</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn small" id="btnToggleEn" onclick="toggleEn()">EN 숨기기</button>
+                        <button class="btn small" id="btnToggleKo" onclick="toggleKo()">KO 숨기기</button>
+                    </div>
+                </div>
+                <div class="pane-body" id="scriptList"></div>
+                <div class="pane-footer" id="scriptFooter">
+                    <button class="btn primary" onclick="onShadowingComplete()">쉐도잉 완료</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/timer.js}"></script>
+<script th:src="@{/js/demo-data.js}"></script>
+<script th:src="@{/js/demo-study.js}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navTimer = document.getElementById('navTimer');
+        if (navTimer) navTimer.style.display = 'inline-flex';
+        StudyTimer.mount(
+            document.getElementById('timerDisplay'),
+            document.getElementById('timerToggle'),
+            true
+        );
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="tab-nav" th:fragment="navbar(active)">
+    <span class="brand">📚 영어 학습 트래커 <span class="notice" style="margin-left:4px;">DEMO</span></span>
+    <a th:href="@{/demo/study}" class="tab-link" th:classappend="${active == 'study'} ? 'active' : ''">학습</a>
+    <a th:href="@{/demo/review}" class="tab-link" th:classappend="${active == 'review'} ? 'active' : ''">복습</a>
+    <a th:href="@{/demo/tracker}" class="tab-link" th:classappend="${active == 'tracker'} ? 'active' : ''">관리</a>
+
+    <div class="nav-timer" id="navTimer" style="display: none;">
+        <span class="timer-icon">⏱</span>
+        <span class="timer-display" id="timerDisplay">00:00</span>
+        <button class="timer-toggle" id="timerToggle" title="재개">▶</button>
+    </div>
+</nav>
+</body>
+</html>
