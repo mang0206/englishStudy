@@ -25,6 +25,12 @@ spring:
 
   # Spring AI - Google GenAI (Gemini API Key 사용)
   ai:
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 1000ms
+        multiplier: 2
+        max-interval: 10000ms
     google:
       genai:
         api-key: ${GEMINI_API_KEY:}
@@ -35,6 +41,8 @@ spring:
             max-tokens: 8196
 
 app:
+  auth:
+    password: ${APP_PASSWORD}
   redis:
     channel:
       sentence-selected: sentence.selected

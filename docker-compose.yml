@@ -74,6 +74,7 @@ services:
       ES_URIS: http://elasticsearch:9200
       TRANSCRIPT_URL: http://transcript:8000
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      APP_PASSWORD: ${APP_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
