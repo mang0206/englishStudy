@@ -2,6 +2,7 @@ package com.minjae.englishtracker.domain.study.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import com.minjae.englishtracker.domain.study.dto.ExpansionDtos.*;
 import com.minjae.englishtracker.domain.study.dto.StudyDtos.*;
 import com.minjae.englishtracker.domain.study.entity.*;
@@ -38,6 +39,18 @@ public class StudyService {
     private final TrackerService trackerService;
     private final ObjectMapper objectMapper;
 
+    @Value("${app.ai.model.translation}")
+    private String translationModel;
+
+    @Value("${app.ai.model.feedback}")
+    private String feedbackModel;
+
+    @Value("${app.ai.model.dictionary}")
+    private String dictionaryModel;
+
+    @Value("${app.ai.temperature.feedback:0.2}")
+    private Double feedbackTemperature;
+
     @Transactional
     public TranslateResponse translateAndSave(String rawScript, String videoId, String chapterTitle, LocalDate date) {
         if (rawScript == null || rawScript.isBlank()) {
@@ -70,7 +83,7 @@ public class StudyService {
         // 2. 캐시 미스: AI 호출
         log.info("Translation cache miss, calling AI: videoId={}, chapter={}", videoId, chapterTitle);
         String prompt = PromptBuilder.translation(rawScript);
-        String response = aiClient.generate(prompt);
+        String response = aiClient.generate(prompt, translationModel);
 
         Script script = Script.builder()
                 .studyDate(date)
@@ -158,7 +171,7 @@ public class StudyService {
 
         String original = selected.getScriptSentence().getEnglishText();
         String prompt = PromptBuilder.expansionFeedback(original, expansions);
-        String response = aiClient.generate(prompt);
+        String response = aiClient.generate(prompt, feedbackModel, feedbackTemperature);
 
         List<FeedbackItem> items = new ArrayList<>();
         try {
@@ -219,7 +232,7 @@ public class StudyService {
         }
 
         String prompt = PromptBuilder.dictionary(koreanWord.trim());
-        String response = aiClient.generate(prompt);
+        String response = aiClient.generate(prompt, dictionaryModel);;
 
         try {
             JsonNode root = objectMapper.readTree(response);
@@ -242,5 +255,12 @@ public class StudyService {
             log.error("Dictionary parse failed. raw={}", response, e);
             throw new DomainException(ErrorCode.AI_PARSING_FAILED, e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getTodayExpressions(LocalDate date) {
+        return selectedSentenceRepository.findByStudyDateOrderByCreatedAtAsc(date).stream()
+                .map(s -> s.getScriptSentence().getEnglishText())
+                .toList();
     }
 }

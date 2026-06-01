@@ -41,6 +41,13 @@ spring:
             max-tokens: 8196
 
 app:
+  ai:
+    model:
+      translation: gemini-2.5-flash
+      feedback: gemini-2.5-flash-lite
+      dictionary: gemini-2.5-flash-lite
+    temperature:
+      feedback: 0.2
   auth:
     password: ${APP_PASSWORD}
   redis:

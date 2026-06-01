@@ -5,14 +5,9 @@ import com.minjae.englishtracker.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.stereotype.Component;
 
-/**
- * Spring AI ChatClient 래퍼.
- *
- * 실제 Provider(Google GenAI, OpenAI, Anthropic 등)는 yml 설정으로 결정되며,
- * 본 클래스는 도메인 코드가 특정 Provider에 결합되지 않도록 추상화 계층을 제공한다.
- */
 @Slf4j
 @Component
 public class AiClient {
@@ -23,25 +18,42 @@ public class AiClient {
         this.chatClient = ChatClient.builder(chatModel).build();
     }
 
-    /**
-     * 프롬프트를 보내고 텍스트 응답을 받는다.
-     */
+    /** 기본 모델(yml 설정) 사용 */
     public String generate(String prompt) {
+        return call(prompt, null, null);
+    }
+
+    /** 모델을 런타임에 지정 (temperature 등 나머지 옵션은 yml 기본값 병합 유지) */
+    public String generate(String prompt, String model) {
+        return call(prompt, model, null);
+    }
+
+    public String generate(String prompt, String model, Double temperature) {
+        return call(prompt, model, temperature);
+    }
+
+    private String call(String prompt, String model, Double temperature) {
         try {
-            String content = chatClient.prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
+            var spec = chatClient.prompt().user(prompt);
+
+            boolean hasModel = (model != null && !model.isBlank());
+            boolean hasTemp = (temperature != null);
+
+            if (hasModel || hasTemp) {
+                var builder = GoogleGenAiChatOptions.builder();
+                if (hasModel) builder.model(model);
+                if (hasTemp)  builder.temperature(temperature);
+                spec = spec.options(builder.build());
+            }
+
+            String content = spec.call().content();
             return stripCodeFence(content);
         } catch (Exception e) {
-            log.error("AI call failed", e);
+            log.error("AI call failed (model={})", model, e);
             throw new DomainException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
-    /**
-     * Gemini가 종종 ```json ... ``` 형식으로 응답하는 경우를 위해 보정.
-     */
     private String stripCodeFence(String text) {
         if (text == null) return "";
         return text.replaceAll("```json", "").replaceAll("```", "").trim();

@@ -1,7 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const results = Session.get('expansionResults') || [];
-    const expressions = results.map(r => `"${r.englishText}"`).join(', ');
+    // DB에서 오늘 선택한 문장(표현)을 가져와 프롬프트 생성
+    fetch('/api/study/today-expressions')
+        .then(r => r.ok ? r.json() : [])
+        .then(list => buildPrompts((list || []).map(e => `"${e}"`).join(', ')))
+        .catch(() => buildPrompts(''));
 
+    // 더 이상 세션에서 표현을 읽지 않으므로 정리만 (있으면 비움)
+    Session.clear('selectedSentences');
+    Session.clear('expansionResults');
+});
+
+function buildPrompts(expressions) {
     const part1 = `너는 내 영어 회화 파트너야.
 현재 수준: 문법 조금 아는 수준이고 말하는 게 어려워.
 
@@ -27,10 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('part1').textContent = part1;
     document.getElementById('part2').textContent = part2;
-
-    Session.clear('selectedSentences');
-    Session.clear('expansionResults');
-});
+}
 
 function copyPrompt(id) {
     const text = document.getElementById(id).textContent;

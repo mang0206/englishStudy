@@ -77,4 +77,10 @@ public class StudyController {
     lookupDictionary(@RequestParam("q") String query) {
         return ResponseEntity.ok(studyService.lookupDictionary(query));
     }
+
+    @GetMapping("/api/study/today-expressions")
+    @ResponseBody
+    public ResponseEntity<List<String>> todayExpressions() {
+        return ResponseEntity.ok(studyService.getTodayExpressions(LocalDate.now()));
+    }
 }

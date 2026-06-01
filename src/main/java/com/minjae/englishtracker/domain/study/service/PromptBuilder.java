@@ -57,6 +57,11 @@ class PromptBuilder {
                 사용자가 빈칸으로 둔 항목은 isCorrect=false, feedback="작성하지 않았습니다"로 응답하세요.
                 만약 "isCorrect: False" 라면, 반드시 올바른 변형 예시를 큰따옴표로 명확하게 제시할 것
                 절대 정답 변형 없이 피드백만 주지 말 것
+                
+                판정 기준:
+                - 대소문자(첫 글자 대문자 여부), 문장 끝 마침표·물음표·느낌표, 앞뒤 공백처럼 표현의 의미와 무관한 차이는 무시하고 isCorrect=true로 판정할 것
+                - 단어 선택, 어순, 시제, 문법 구조가 자연스러우면 정답으로 처리할 것
+                - 철자 오류, 문법 오류, 부자연스러운 표현일 때만 isCorrect=false로 판정할 것
                 """.formatted(original, expansionsText);
     }
 
