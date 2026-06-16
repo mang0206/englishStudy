@@ -338,9 +338,12 @@ body {
     overflow: hidden;
 }
 .study-video-section {
-    height: 410px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 45vh;
+    flex-shrink: 1;
+    min-height: 0;
     background: #000;
-    flex-shrink: 0;
 }
 .study-video-section iframe {
     width: 100%;
@@ -527,4 +530,11 @@ body {
 }
 .script-block.checking .check-mock {
     cursor: default;   /* 기존 pointer → 데모에선 클릭 불가 느낌 */
+}
+
+@media (max-height: 800px) {
+    .study-video-section { max-height: 38vh; }
+}
+@media (max-height: 650px) {
+    .study-video-section { max-height: 32vh; }
 }
